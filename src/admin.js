@@ -337,7 +337,25 @@ function startAdminServer(dataProvider) {
                 seedId: p.seed_id,
                 level: Number(p.land_level_need) || 0,
                 price: getSeedPrice(p.seed_id),
-            })).sort((a, b) => a.price - b.price);
+            })).sort((a, b) => {
+                const aLevel = Number(a.level) || 0;
+                const bLevel = Number(b.level) || 0;
+
+                // 未知等级（0）放到最后，其他按等级升序
+                if (aLevel <= 0 && bLevel > 0) return 1;
+                if (bLevel <= 0 && aLevel > 0) return -1;
+                if (aLevel !== bLevel) return aLevel - bLevel;
+
+                // 同等级时按价格、名称、ID稳定排序
+                const aPrice = Number(a.price) || 0;
+                const bPrice = Number(b.price) || 0;
+                if (aPrice !== bPrice) return aPrice - bPrice;
+
+                const nameCompare = String(a.name || '').localeCompare(String(b.name || ''), 'zh-Hans-CN');
+                if (nameCompare !== 0) return nameCompare;
+
+                return Number(a.id) - Number(b.id);
+            });
             res.json({ ok: true, data });
         } catch (e) {
             res.status(500).json({ ok: false, error: e.message });
