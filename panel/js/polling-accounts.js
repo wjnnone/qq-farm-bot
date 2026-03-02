@@ -484,17 +484,23 @@ async function pollStatus(options = {}) {
 
         // 好友细分开关
         if (!pendingAutomationKeys.has('friend_steal')) $('auto-friend-steal').checked = !!auto.friend_steal;
-        if (!pendingAutomationKeys.has('friend_steal_skip_white_radish')) $('auto-friend-steal-skip-white-radish').checked = !!auto.friend_steal_skip_white_radish;
+        if (!pendingAutomationKeys.has('friend_steal_skip_white_radish')) {
+            const el = $('auto-friend-steal-skip-white-radish');
+            if (el) {
+                el.checked = !!auto.friend_steal_skip_white_radish;
+            } else {
+                console.warn('⚠️ 找不到元素 #auto-friend-steal-skip-white-radish，跳过设置 checked');
+            }
+        }
         if (!pendingAutomationKeys.has('friend_help')) $('auto-friend-help').checked = !!auto.friend_help;
         if (!pendingAutomationKeys.has('friend_bad')) $('auto-friend-bad').checked = !!auto.friend_bad;
         updateFriendSubControlsState();
 
-        // Operations Stats
         const opsPayload = (data.operations && typeof data.operations === 'object')
             ? data.operations
             : lastOperationsData;
         renderOpsList(opsPayload || {});
-
+        //renderOpsList(data.operations)
         // Seed Pref
         if (document.activeElement !== $('seed-select') && data.preferredSeed !== undefined) {
             const sel = $('seed-select');

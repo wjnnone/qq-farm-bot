@@ -159,39 +159,49 @@ function registerUser(username, password, cardCode) {
 function renewUser(username, cardCode) {
     loadUsers();
     loadCards();
-    
+
     const user = users.find(u => u.username === username);
     if (!user) {
         return { ok: false, error: '用户不存在' };
     }
-    
+
     const card = cards.find(c => c.code === cardCode);
     if (!card) {
         return { ok: false, error: '卡密不存在' };
     }
-    
+
     if (!card.enabled) {
         return { ok: false, error: '卡密已被禁用' };
     }
-    
+
+    // ✅ 新增：检查卡密是否已被使用
+    if (card.usedBy) {
+        return { ok: false, error: '卡密已被使用' };
+    }
+
     const now = Date.now();
     const currentExpires = user.card?.expiresAt || 0;
     const newExpires = card.type === 'F' ? null : (now + card.days * 24 * 60 * 60 * 1000);
-    
+
     if (currentExpires && currentExpires > now && newExpires) {
         user.card.expiresAt = currentExpires + (newExpires - now);
     } else {
         user.card.expiresAt = newExpires;
     }
-    
+
     user.card.code = card.code;
     user.card.description = card.description;
     user.card.type = card.type;
     user.card.typeChar = card.typeChar;
     user.card.days = card.days;
-    
+
+    // ✅ 新增：标记卡密为已使用
+    card.usedBy = username;
+    card.usedAt = Date.now();
+
     saveUsers();
-    
+    saveCards(); // ✅ 确保保存修改
+
     return { ok: true, card: user.card };
 }
 

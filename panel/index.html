@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>QQ农场智能助手</title>
+  <title>农场智能辅助工具</title>
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="stylesheet" href="style.css?v=2026022317">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -12,7 +12,7 @@
   <div id="login-overlay" class="login-overlay">
     <div class="login-card">
       <div class="login-title">登录面板</div>
-      <center><b><h3>👨‍🌾 QQ农场助手</h3></b></center>
+      <center><b><h3>👨‍🌾 农场智能助手</h3></b></center>
       <div class="login-tabs">
         <button class="tab-btn active" data-login-tab="login">登录</button>
         <button class="tab-btn" data-login-tab="register">注册</button>
@@ -383,13 +383,19 @@
                   <label class="switch-item friend-sub-item"><span class="friend-sub-label">自动捣乱</span><input type="checkbox" id="auto-friend-bad"><span class="slider"></span></label>
                 </div>
 
-                <div class="card-head" style="margin-top:12px"><h3><i class="fas fa-filter"></i> 偷菜过滤设置</h3></div>
+                <!-- 偷菜过滤设置 -->
+                <div class="card-head" style="margin-top:12px">
+                  <h3><i class="fas fa-filter"></i> 偷菜过滤设置</h3>
+                </div>
                 <div class="settings-grid">
+                  <!-- 启用偷菜过滤 -->
                   <div class="form-group full">
                     <label class="checkbox-inline">
                       <input type="checkbox" id="steal-filter-enabled"> 启用偷菜过滤
                     </label>
                   </div>
+
+                  <!-- 过滤模式 -->
                   <div class="form-group">
                     <label>过滤模式</label>
                     <select id="steal-filter-mode" class="form-control">
@@ -397,6 +403,8 @@
                       <option value="whitelist">白名单（只偷选中的蔬菜）</option>
                     </select>
                   </div>
+
+                  <!-- 选择蔬菜（可多选） -->
                   <div class="form-group full">
                     <label>选择蔬菜（可多选）</label>
                     <div id="steal-filter-plants" class="plant-multi-select">
@@ -405,35 +413,41 @@
                   </div>
                 </div>
 
+                <!-- 偷菜好友过滤 -->
                 <div class="card-head" style="margin-top:12px">
-  <h3><i class="fas fa-user-shield"></i> 偷菜好友过滤</h3>
-</div>
-<div class="settings-grid">
-  <!-- 启用过滤 -->
-  <div class="form-group full">
-    <label class="checkbox-inline">
-      <input type="checkbox" id="steal-friend-filter-enabled"> 启用好友过滤
-    </label>
-  </div>
+                  <h3><i class="fas fa-user-shield"></i> 偷菜好友过滤</h3>
+                </div>
+                <div class="settings-grid">
+                  <!-- 启用好友过滤 -->
+                  <div class="form-group full">
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="steal-friend-filter-enabled"> 启用好友过滤
+                    </label>
+                  </div>
 
-  <!-- 过滤模式 -->
-  <div class="form-group">
-    <label>过滤模式</label>
-    <select id="steal-friend-filter-mode" class="form-control">
-      <option value="blacklist">黑名单（不偷列表中的好友）</option>
-      <option value="whitelist">白名单（只偷列表中的好友）</option>
-    </select>
-  </div>
+                  <!-- 过滤模式 -->
+                  <div class="form-group">
+                    <label>过滤模式</label>
+                    <select id="steal-friend-filter-mode" class="form-control">
+                      <option value="blacklist">黑名单（不偷列表中的好友）</option>
+                      <option value="whitelist">白名单（只偷列表中的好友）</option>
+                    </select>
+                  </div>
 
-  <!-- 好友多选 + 搜索 -->
-  <div class="form-group full">
-    <label>选择好友（可多选）</label>
-    <input type="text" id="steal-friend-search" class="form-control" placeholder="输入好友名称搜索...">
-    <div id="steal-friend-filter-list" class="friend-multi-select">
-      <div class="friend-select-loading">请先选择账号并保存设置</div>
-    </div>
-  </div>
-</div>
+                  <!-- 搜索好友名字 -->
+                  <div class="form-group">
+                    <label>搜索好友</label>
+                    <input type="text" id="steal-friend-search" class="form-control" placeholder="输入好友名称搜索...">
+                  </div>
+
+                  <!-- 选择好友（可多选） -->
+                  <div class="form-group full">
+                    <label>选择好友（可多选）</label>
+                    <div id="steal-friend-filter-list" class="friend-multi-select">
+                      <div class="friend-select-loading">请先选择账号并保存设置</div>
+                    </div>
+                  </div>
+                </div>
 
                 <div class="form-group compact">
                   <label>施肥策略</label>

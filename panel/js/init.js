@@ -323,7 +323,7 @@ if (btnSubmitRenew) {
                 body: JSON.stringify({ cardCode })
             });
             const j = await r.json();
-            
+            console.log(j);
             if (j && j.ok) {
                 showAlert('成功', '续费成功！');
                 $('modal-renew').classList.remove('show');

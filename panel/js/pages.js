@@ -1,4 +1,9 @@
+// 全局变量，用于存储用户选择的好友ID
+// 全局变量，用于存储用户选择的植物ID
+let selectedPlantIds = new Set();
 
+// 全局变量，用于存储用户选择的好友ID
+let selectedFriendIds = new Set();
 function renderLandCropImage(land) {
     if (!land || !land.seedImage || !land.plantName) return '';
     const alt = String(land.plantName).replace(/"/g, '&quot;');
@@ -404,112 +409,114 @@ $('strategy-select').addEventListener('change', async () => {
     await refreshSeedSelectByStrategy();
 });
 
-$('btn-save-settings').addEventListener('click', async () => {
-    const strategy = $('strategy-select').value;
-    let farmMin = parseInt($('interval-farm-min').value, 10);
-    let farmMax = parseInt($('interval-farm-max').value, 10);
-    let friendMin = parseInt($('interval-friend-min').value, 10);
-    let friendMax = parseInt($('interval-friend-max').value, 10);
-    const seedId = parseInt($('seed-select').value) || 0;
-    const friendQuietEnabled = !!$('friend-quiet-enabled').checked;
-    const friendQuietStart = $('friend-quiet-start').value || '23:00';
-    const friendQuietEnd = $('friend-quiet-end').value || '07:00';
+// 保存设置按钮点击事件（假设绑定在某个按钮，如 'btn-save-settings'）
+const saveSettingsBtn = document.getElementById('btn-save-settings');
+if (saveSettingsBtn) {
+    saveSettingsBtn.addEventListener('click', async () => {
+        const strategy = document.getElementById('strategy-select').value;
+        let farmMin = parseInt(document.getElementById('interval-farm-min').value, 10);
+        let farmMax = parseInt(document.getElementById('interval-farm-max').value, 10);
+        let friendMin = parseInt(document.getElementById('interval-friend-min').value, 10);
+        let friendMax = parseInt(document.getElementById('interval-friend-max').value, 10);
+        const seedId = parseInt(document.getElementById('seed-select').value) || 0;
+        const friendQuietEnabled = document.getElementById('friend-quiet-enabled').checked;
+        const friendQuietStart = document.getElementById('friend-quiet-start').value || '23:00';
+        const friendQuietEnd = document.getElementById('friend-quiet-end').value || '07:00';
 
-    farmMin = Math.max(1, Number.isFinite(farmMin) ? farmMin : 2);
-    farmMax = Math.max(1, Number.isFinite(farmMax) ? farmMax : farmMin);
-    if (farmMin > farmMax) {
-        alert('农场巡查间隔：最大值不能小于最小值');
-        $('interval-farm-max').focus();
-        return;
-    }
+        // 确保 farmMin 和 farmMax 的合理性
+        farmMin = Math.max(1, Number.isFinite(farmMin) ? farmMin : 2);
+        farmMax = Math.max(1, Number.isFinite(farmMax) ? farmMax : farmMin);
+        if (farmMin > farmMax) {
+            alert('农场巡查间隔：最大值不能小于最小值');
+            document.getElementById('interval-farm-max').focus();
+            return;
+        }
 
-    friendMin = Math.max(1, Number.isFinite(friendMin) ? friendMin : 10);
-    friendMax = Math.max(1, Number.isFinite(friendMax) ? friendMax : friendMin);
-    if (friendMin > friendMax) {
-        alert('好友巡查间隔：最大值不能小于最小值');
-        $('interval-friend-max').focus();
-        return;
-    }
+        // 确保 friendMin 和 friendMax 的合理性
+        friendMin = Math.max(1, Number.isFinite(friendMin) ? friendMin : 10);
+        friendMax = Math.max(1, Number.isFinite(friendMax) ? friendMax : friendMin);
+        if (friendMin > friendMax) {
+            alert('好友巡查间隔：最大值不能小于最小值');
+            document.getElementById('interval-friend-max').focus();
+            return;
+        }
 
-    $('interval-farm-min').value = String(farmMin);
-    $('interval-farm-max').value = String(farmMax);
-    $('interval-friend-min').value = String(friendMin);
-    $('interval-friend-max').value = String(friendMax);
+        // 更新输入框的值
+        document.getElementById('interval-farm-min').value = String(farmMin);
+        document.getElementById('interval-farm-max').value = String(farmMax);
+        document.getElementById('interval-friend-min').value = String(friendMin);
+        document.getElementById('interval-friend-max').value = String(friendMax);
 
-    // 获取偷菜过滤选中的植物ID
-    const selectedPlantIds = [];
-    document.querySelectorAll('#steal-filter-plants .plant-checkbox:checked').forEach(cb => {
-        const id = parseInt(cb.dataset.plantId, 10);
-        if (id > 0) selectedPlantIds.push(id);
+        // 获取偷菜过滤选中的植物ID
+        const selectedPlantIdsArray = Array.from(selectedPlantIds);
+
+        // 获取偷菜好友过滤选中的好友ID
+        const selectedFriendIdsArray = Array.from(selectedFriendIds);
+
+        const saveBtn = document.getElementById('btn-save-settings');
+        if (saveBtn) saveBtn.disabled = true;
+        try {
+            const settingsResp = await api('/api/settings/save', 'POST', {
+                strategy,
+                seedId,
+                intervals: {
+                    farm: farmMin,
+                    friend: friendMin,
+                    farmMin,
+                    farmMax,
+                    friendMin,
+                    friendMax,
+                },
+                friendQuietHours: {
+                    enabled: friendQuietEnabled,
+                    start: friendQuietStart,
+                    end: friendQuietEnd,
+                },
+                stealFilter: {
+                    enabled: document.getElementById('steal-filter-enabled').checked,
+                    mode: document.getElementById('steal-filter-mode').value || 'blacklist',
+                    plantIds: selectedPlantIdsArray, // 传递当前选择的植物ID
+                },
+                stealFriendFilter: {
+                    enabled: document.getElementById('steal-friend-filter-enabled').checked,
+                    mode: document.getElementById('steal-friend-filter-mode').value || 'blacklist',
+                    friendIds: selectedFriendIdsArray, // 传递当前选择的好友ID
+                }
+            });
+            updateRevisionState(settingsResp);
+
+            const automationResp = await api('/api/automation', 'POST', {
+                farm: document.getElementById('auto-farm').checked,
+                farm_push: document.getElementById('auto-farm-push').checked,
+                land_upgrade: document.getElementById('auto-land-upgrade').checked,
+                friend_help_exp_limit: document.getElementById('auto-friend').checked,
+                task: document.getElementById('auto-task').checked,
+                email: document.getElementById('auto-daily-routine').checked,
+                fertilizer_gift: document.getElementById('auto-fertilizer-gift').checked,
+                fertilizer_buy: document.getElementById('auto-fertilizer-buy').checked,
+                free_gifts: document.getElementById('auto-daily-routine').checked,
+                share_reward: document.getElementById('auto-daily-routine').checked,
+                vip_gift: document.getElementById('auto-daily-routine').checked,
+                month_card: document.getElementById('auto-daily-routine').checked,
+                sell: document.getElementById('auto-sell').checked,
+                fertilizer: document.getElementById('fertilizer-select').value,
+                friend_steal: document.getElementById('auto-friend-steal').checked,
+                friend_help: document.getElementById('auto-friend-help').checked,
+                friend_bad: document.getElementById('auto-friend-bad').checked,
+            });
+            updateRevisionState(automationResp);
+            pendingAutomationKeys.clear();
+
+            await loadSettings(); // 重新加载设置以反映保存后的状态
+            alert('设置已保存');
+        } catch (error) {
+            console.error('保存设置时出错:', error);
+            alert('保存设置时出错，请重试。');
+        } finally {
+            if (saveBtn) saveBtn.disabled = false;
+        }
     });
-
-    // 获取偷菜好友过滤选中的好友ID
-    const selectedFriendIds = [];
-    document.querySelectorAll('#steal-friend-filter-list .friend-checkbox:checked').forEach(cb => {
-        const id = parseInt(cb.dataset.friendId, 10);
-        if (id > 0) selectedFriendIds.push(id);
-    });
-
-    const saveBtn = $('btn-save-settings');
-    if (saveBtn) saveBtn.disabled = true;
-    try {
-        const settingsResp = await api('/api/settings/save', 'POST', {
-            strategy,
-            seedId,
-            intervals: {
-                farm: farmMin,
-                friend: friendMin,
-                farmMin,
-                farmMax,
-                friendMin,
-                friendMax,
-            },
-            friendQuietHours: {
-                enabled: friendQuietEnabled,
-                start: friendQuietStart,
-                end: friendQuietEnd,
-            },
-            stealFilter: {
-                enabled: !!$('steal-filter-enabled').checked,
-                mode: $('steal-filter-mode').value || 'blacklist',
-                plantIds: selectedPlantIds,
-            },
-            stealFriendFilter: {
-                enabled: !!$('steal-friend-filter-enabled').checked,
-                mode: $('steal-friend-filter-mode').value || 'blacklist',
-                friendIds: selectedFriendIds,
-            }
-        });
-        updateRevisionState(settingsResp);
-
-        const automationResp = await api('/api/automation', 'POST', {
-            farm: !!$('auto-farm').checked,
-            farm_push: !!$('auto-farm-push').checked,
-            land_upgrade: !!$('auto-land-upgrade').checked,
-            friend_help_exp_limit: !!$('auto-friend').checked,
-            task: !!$('auto-task').checked,
-            email: !!$('auto-daily-routine').checked,
-            fertilizer_gift: !!$('auto-fertilizer-gift').checked,
-            fertilizer_buy: !!$('auto-fertilizer-buy').checked,
-            free_gifts: !!$('auto-daily-routine').checked,
-            share_reward: !!$('auto-daily-routine').checked,
-            vip_gift: !!$('auto-daily-routine').checked,
-            month_card: !!$('auto-daily-routine').checked,
-            sell: !!$('auto-sell').checked,
-            fertilizer: $('fertilizer-select').value,
-            friend_steal: !!$('auto-friend-steal').checked,
-            friend_help: !!$('auto-friend-help').checked,
-            friend_bad: !!$('auto-friend-bad').checked,
-        });
-        updateRevisionState(automationResp);
-        pendingAutomationKeys.clear();
-
-        await loadSettings();
-        alert('设置已保存');
-    } finally {
-        if (saveBtn) saveBtn.disabled = false;
-    }
-});
+}
 
 const saveOfflineReminderBtn = document.getElementById('btn-save-offline-reminder');
 const PUSHOO_CHANNELS = new Set([
@@ -562,6 +569,15 @@ if (saveOfflineReminderBtn) {
     });
 }
 
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 // 加载植物列表用于偷菜过滤
 async function loadStealFilterPlants(stealFilter) {
     const container = $('steal-filter-plants');
@@ -602,8 +618,9 @@ async function loadStealFilterPlants(stealFilter) {
 }
 
 // 加载好友列表用于偷菜好友过滤
-async function loadStealFriendFilterList(stealFriendFilter) {
-    const container = $('steal-friend-filter-list');
+// 加载好友列表用于偷菜好友过滤
+async function loadStealFriendFilterList(stealFriendFilter, searchQuery = '') {
+    const container = document.getElementById('steal-friend-filter-list');
     if (!container) return;
 
     if (!currentAccountId) {
@@ -618,12 +635,20 @@ async function loadStealFriendFilterList(stealFriendFilter) {
         return;
     }
 
+    // 根据搜索查询过滤好友
+    let filteredFriends = friends;
+    if (searchQuery.trim() !== '') {
+        const query = searchQuery.toLowerCase();
+        filteredFriends = friends.filter(f => f.name.toLowerCase().includes(query));
+    }
+
+    // 使用传入的 stealFriendFilter 中的 friendIds，或者默认为空数组
     const selectedIds = new Set((stealFriendFilter && stealFriendFilter.friendIds) || []);
 
-    container.innerHTML = friends.map(f => {
+    container.innerHTML = filteredFriends.map(f => {
         const checked = selectedIds.has(f.gid) ? 'checked' : '';
         const avatarHtml = f.avatar
-            ? `<img src="${escapeHtml(f.avatar)}" alt="${escapeHtml(f.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'">`
+            ? ``
             : `<span class="friend-fallback">${escapeHtml(f.name.slice(0, 1))}</span>`;
         return `
             <label class="friend-checkbox-item" title="${escapeHtml(f.name)} (GID: ${f.gid})">
@@ -634,20 +659,36 @@ async function loadStealFriendFilterList(stealFriendFilter) {
         `;
     }).join('');
 
-    // 绑定复选框变化事件
-    container.querySelectorAll('.friend-checkbox').forEach(cb => {
-        cb.addEventListener('change', () => {
+    // 使用事件委托绑定复选框变化事件，更新 selectedFriendIds
+    container.addEventListener('change', (event) => {
+        if (event.target.classList.contains('friend-checkbox')) {
+            const friendId = parseInt(event.target.getAttribute('data-friend-id'), 10);
+            if (event.target.checked) {
+                selectedFriendIds.add(friendId);
+            } else {
+                selectedFriendIds.delete(friendId);
+            }
             if (!currentAccountId) return;
             markAutomationPending('stealFriendFilter');
-        });
+        }
     });
 }
 
 // 加载额外设置
 async function loadSettings() {
-    const data = await api('/api/settings');
-    if (data) {
-        if (data.strategy) $('strategy-select').value = data.strategy;
+    try {
+        const data = await api('/api/settings');
+        if (!data) {
+            console.warn('未获取到设置数据');
+            return;
+        }
+
+        // ========== 其他设置加载代码（根据您的实际需求保持不变） ==========
+
+        // ========== 加载种植策略相关设置 ==========
+        if (data.strategy) {
+            document.getElementById('strategy-select').value = data.strategy;
+        }
         if (data.intervals) {
             const farmBase = Number(data.intervals.farm || 2);
             const friendBase = Number(data.intervals.friend || 10);
@@ -655,13 +696,13 @@ async function loadSettings() {
             const farmMax = Number(data.intervals.farmMax || farmMin || 2);
             const friendMin = Number(data.intervals.friendMin || friendBase || 10);
             const friendMax = Number(data.intervals.friendMax || friendMin || 10);
-            $('interval-farm-min').value = String(farmMin);
-            $('interval-farm-max').value = String(farmMax);
-            $('interval-friend-min').value = String(friendMin);
-            $('interval-friend-max').value = String(friendMax);
+            document.getElementById('interval-farm-min').value = String(farmMin);
+            document.getElementById('interval-farm-max').value = String(farmMax);
+            document.getElementById('interval-friend-min').value = String(friendMin);
+            document.getElementById('interval-friend-max').value = String(friendMax);
         }
         if (data.preferredSeed !== undefined) {
-            const sel = $('seed-select');
+            const sel = document.getElementById('seed-select');
             if (currentAccountId && sel.dataset.loaded !== '1') {
                 await loadSeeds(data.preferredSeed);
             } else {
@@ -669,74 +710,116 @@ async function loadSettings() {
             }
         }
         if (data.automation && typeof data.automation === 'object') {
-            const auto = data.automation;
-            $('auto-farm').checked = !!auto.farm;
-            $('auto-farm-push').checked = !!auto.farm_push;
-            $('auto-land-upgrade').checked = !!auto.land_upgrade;
-            $('auto-friend').checked = !!auto.friend_help_exp_limit;
-            $('auto-task').checked = !!auto.task;
-            $('auto-daily-routine').checked = !!(auto.email && auto.free_gifts && auto.share_reward && auto.vip_gift && auto.month_card);
-            $('auto-fertilizer-gift').checked = !!auto.fertilizer_gift;
-            $('auto-fertilizer-buy').checked = !!auto.fertilizer_buy;
-            $('auto-sell').checked = !!auto.sell;
-            $('auto-friend-steal').checked = !!auto.friend_steal;
-            $('auto-friend-help').checked = !!auto.friend_help;
-            $('auto-friend-bad').checked = !!auto.friend_bad;
-            if (auto.fertilizer) $('fertilizer-select').value = auto.fertilizer;
+            document.getElementById('auto-farm').checked = !!data.automation.farm;
+            document.getElementById('auto-farm-push').checked = !!data.automation.farm_push;
+            document.getElementById('auto-land-upgrade').checked = !!data.automation.land_upgrade;
+            document.getElementById('auto-friend').checked = !!data.automation.friend_help_exp_limit;
+            document.getElementById('auto-task').checked = !!data.automation.task;
+            document.getElementById('auto-daily-routine').checked = !!(data.automation.email && data.automation.free_gifts && data.automation.share_reward && data.automation.vip_gift && data.automation.month_card);
+            document.getElementById('auto-fertilizer-gift').checked = !!data.automation.fertilizer_gift;
+            document.getElementById('auto-fertilizer-buy').checked = !!data.automation.fertilizer_buy;
+            document.getElementById('auto-sell').checked = !!data.automation.sell;
+            document.getElementById('auto-friend-steal').checked = !!data.automation.friend_steal;
+            document.getElementById('auto-friend-help').checked = !!data.automation.friend_help;
+            document.getElementById('auto-friend-bad').checked = !!data.automation.friend_bad;
+            if (data.automation.fertilizer) {
+                document.getElementById('fertilizer-select').value = data.automation.fertilizer;
+            }
             updateFriendSubControlsState();
         }
-        // 加载偷菜过滤配置
+
+        // ========== 加载偷菜过滤配置 ==========
         if (data.stealFilter && typeof data.stealFilter === 'object') {
-            $('steal-filter-enabled').checked = !!data.stealFilter.enabled;
-            $('steal-filter-mode').value = data.stealFilter.mode || 'blacklist';
+            document.getElementById('steal-filter-enabled').checked = !!data.stealFilter.enabled;
+            document.getElementById('steal-filter-mode').value = data.stealFilter.mode || 'blacklist';
+            selectedPlantIds = new Set((data.stealFilter.plantIds || []).map(id => parseInt(id, 10)));
             await loadStealFilterPlants(data.stealFilter);
         } else {
-            $('steal-filter-enabled').checked = false;
-            $('steal-filter-mode').value = 'blacklist';
+            document.getElementById('steal-filter-enabled').checked = false;
+            document.getElementById('steal-filter-mode').value = 'blacklist';
+            selectedPlantIds = new Set();
             await loadStealFilterPlants({ plantIds: [] });
         }
-        // 加载偷菜好友过滤配置
+
+        // ========== 加载偷菜好友过滤配置 ==========
         if (data.stealFriendFilter && typeof data.stealFriendFilter === 'object') {
-            $('steal-friend-filter-enabled').checked = !!data.stealFriendFilter.enabled;
-            $('steal-friend-filter-mode').value = data.stealFriendFilter.mode || 'blacklist';
+            document.getElementById('steal-friend-filter-enabled').checked = !!data.stealFriendFilter.enabled;
+            document.getElementById('steal-friend-filter-mode').value = data.stealFriendFilter.mode || 'blacklist';
+            selectedFriendIds = new Set((data.stealFriendFilter.friendIds || []).map(id => parseInt(id, 10)));
             await loadStealFriendFilterList(data.stealFriendFilter);
         } else {
-            $('steal-friend-filter-enabled').checked = false;
-            $('steal-friend-filter-mode').value = 'blacklist';
+            document.getElementById('steal-friend-filter-enabled').checked = false;
+            document.getElementById('steal-friend-filter-mode').value = 'blacklist';
+            selectedFriendIds = new Set();
             await loadStealFriendFilterList({ friendIds: [] });
         }
-        await refreshSeedSelectByStrategy();
-        if (data.friendQuietHours) {
-            $('friend-quiet-enabled').checked = !!data.friendQuietHours.enabled;
-            $('friend-quiet-start').value = data.friendQuietHours.start || '23:00';
-            $('friend-quiet-end').value = data.friendQuietHours.end || '07:00';
+
+        // ========== 加载施肥策略 ==========
+        if (data.fertilizer) {
+            document.getElementById('fertilizer-select').value = data.fertilizer;
         }
-        if (data.ui && (data.ui.theme === 'light' || data.ui.theme === 'dark')) {
-            localStorage.setItem(THEME_STORAGE_KEY, data.ui.theme);
-            applyTheme(data.ui.theme);
-        }
+
+        // ========== 加载其他设置（如静默时段、下线提醒等） ==========
         const reminder = (data.offlineReminder && typeof data.offlineReminder === 'object') ? data.offlineReminder : {};
         const savedChannel = String(reminder.channel || '').trim().toLowerCase();
-        if ($('offline-reminder-channel')) {
-            $('offline-reminder-channel').value = PUSHOO_CHANNELS.has(savedChannel) ? savedChannel : 'webhook';
+        if (document.getElementById('offline-reminder-channel')) {
+            document.getElementById('offline-reminder-channel').value = PUSHOO_CHANNELS.has(savedChannel) ? savedChannel : 'webhook';
         }
         const reloginUrlMode = String(reminder.reloginUrlMode || 'none').trim();
-        if ($('offline-reminder-relogin-url-mode')) {
-            const reloginUrlModeEl = $('offline-reminder-relogin-url-mode');
+        if (document.getElementById('offline-reminder-relogin-url-mode')) {
+            const reloginUrlModeEl = document.getElementById('offline-reminder-relogin-url-mode');
             const allow = new Set(['none', 'qq_link', 'qr_link']);
             reloginUrlModeEl.value = allow.has(reloginUrlMode) ? reloginUrlMode : 'none';
         }
-        if ($('offline-reminder-endpoint')) {
-            $('offline-reminder-endpoint').value = String(reminder.endpoint || '').trim();
+        if (document.getElementById('offline-reminder-endpoint')) {
+            document.getElementById('offline-reminder-endpoint').value = String(reminder.endpoint || '').trim();
         }
+        if (document.getElementById('offline-reminder-token')) {
+            document.getElementById('offline-reminder-token').value = String(reminder.token || '');
+        }
+        if (document.getElementById('offline-reminder-title')) {
+            document.getElementById('offline-reminder-title').value = String(reminder.title || '账号下线提醒');
+        }
+        if (document.getElementById('offline-reminder-msg')) {
+            document.getElementById('offline-reminder-msg').value = String(reminder.msg || '账号下线');
+        }
+        if (document.getElementById('offline-delete-seconds')) {
+            document.getElementById('offline-delete-seconds').value = String(Number(reminder.offlineDeleteSec || 120));
+        }
+        const enabled = !!document.getElementById('friend-quiet-enabled').checked;
+        document.getElementById('friend-quiet-start').disabled = !enabled;
+        document.getElementById('friend-quiet-end').disabled = !enabled;
+        if (data.friendQuietHours) {
+            document.getElementById('friend-quiet-enabled').checked = !!data.friendQuietHours.enabled;
+            document.getElementById('friend-quiet-start').value = data.friendQuietHours.start || '23:00';
+            document.getElementById('friend-quiet-end').value = data.friendQuietHours.end || '07:00';
+        }
+
+        // 同步下线提醒渠道UI
         syncOfflineReminderChannelUI();
-        if ($('offline-reminder-token')) $('offline-reminder-token').value = String(reminder.token || '');
-        if ($('offline-reminder-title')) $('offline-reminder-title').value = String(reminder.title || '账号下线提醒');
-        if ($('offline-reminder-msg')) $('offline-reminder-msg').value = String(reminder.msg || '账号下线');
-        if ($('offline-delete-seconds')) $('offline-delete-seconds').value = String(Number(reminder.offlineDeleteSec || 120));
-        const enabled = !!$('friend-quiet-enabled').checked;
-        $('friend-quiet-start').disabled = !enabled;
-        $('friend-quiet-end').disabled = !enabled;
+
+        // ========== 绑定搜索好友名字的输入框事件 ==========
+        const stealFriendSearchInput = document.getElementById('steal-friend-search');
+        if (stealFriendSearchInput) {
+            stealFriendSearchInput.addEventListener('input', async () => {
+                if (!currentAccountId) return;
+                const searchQuery = stealFriendSearchInput.value;
+                await loadStealFriendFilterList(
+                    {
+                        enabled: document.getElementById('steal-friend-filter-enabled').checked,
+                        mode: document.getElementById('steal-friend-filter-mode').value || 'blacklist',
+                        friendIds: Array.from(selectedFriendIds)
+                    },
+                    searchQuery
+                );
+            });
+        }
+
+        // ========== 其他设置加载代码（根据您的实际需求保持不变） ==========
+
+    } catch (error) {
+        console.error('加载设置时出错:', error);
+        // 可以根据需要显示错误提示给用户
     }
 }
 
