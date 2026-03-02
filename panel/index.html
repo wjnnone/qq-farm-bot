@@ -405,27 +405,35 @@
                   </div>
                 </div>
 
-                <div class="card-head" style="margin-top:12px"><h3><i class="fas fa-user-shield"></i> 偷菜好友过滤</h3></div>
-                <div class="settings-grid">
-                  <div class="form-group full">
-                    <label class="checkbox-inline">
-                      <input type="checkbox" id="steal-friend-filter-enabled"> 启用好友过滤
-                    </label>
-                  </div>
-                  <div class="form-group">
-                    <label>过滤模式</label>
-                    <select id="steal-friend-filter-mode" class="form-control">
-                      <option value="blacklist">黑名单（不偷列表中的好友）</option>
-                      <option value="whitelist">白名单（只偷列表中的好友）</option>
-                    </select>
-                  </div>
-                  <div class="form-group full">
-                    <label>选择好友（可多选）</label>
-                    <div id="steal-friend-filter-list" class="friend-multi-select">
-                      <div class="friend-select-loading">请先选择账号并保存设置</div>
-                    </div>
-                  </div>
-                </div>
+                <div class="card-head" style="margin-top:12px">
+  <h3><i class="fas fa-user-shield"></i> 偷菜好友过滤</h3>
+</div>
+<div class="settings-grid">
+  <!-- 启用过滤 -->
+  <div class="form-group full">
+    <label class="checkbox-inline">
+      <input type="checkbox" id="steal-friend-filter-enabled"> 启用好友过滤
+    </label>
+  </div>
+
+  <!-- 过滤模式 -->
+  <div class="form-group">
+    <label>过滤模式</label>
+    <select id="steal-friend-filter-mode" class="form-control">
+      <option value="blacklist">黑名单（不偷列表中的好友）</option>
+      <option value="whitelist">白名单（只偷列表中的好友）</option>
+    </select>
+  </div>
+
+  <!-- 好友多选 + 搜索 -->
+  <div class="form-group full">
+    <label>选择好友（可多选）</label>
+    <input type="text" id="steal-friend-search" class="form-control" placeholder="输入好友名称搜索...">
+    <div id="steal-friend-filter-list" class="friend-multi-select">
+      <div class="friend-select-loading">请先选择账号并保存设置</div>
+    </div>
+  </div>
+</div>
 
                 <div class="form-group compact">
                   <label>施肥策略</label>
