@@ -1,0 +1,41 @@
+{
+  "name": "qq-farm-bot-web",
+  "type": "module",
+  "version": "2.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "lint": "eslint \"src/**/*.{ts,vue}\" --fix",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vueuse/core": "^14.2.1",
+    "axios": "^1.13.5",
+    "nprogress": "^0.2.0",
+    "pinia": "^3.0.4",
+    "socket.io-client": "^4.8.3",
+    "vue": "^3.5.25",
+    "vue-router": "^5.0.3"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^7.4.3",
+    "@iconify-json/carbon": "^1.2.18",
+    "@iconify-json/fa-solid": "^1.2.2",
+    "@iconify-json/svg-spinners": "^1.2.4",
+    "@types/node": "^24.10.1",
+    "@types/nprogress": "^0.2.3",
+    "@unocss/eslint-plugin": "^66.5.12",
+    "@unocss/reset": "^66.5.12",
+    "@vitejs/plugin-vue": "^6.0.2",
+    "@vue/tsconfig": "^0.8.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-format": "^1.4.0",
+    "rollup-plugin-visualizer": "^7.0.0",
+    "typescript": "~5.9.3",
+    "unocss": "^66.5.12",
+    "vite": "^7.3.1",
+    "vite-plugin-compression": "^0.5.1",
+    "vue-tsc": "^3.1.5"
+  }
+}

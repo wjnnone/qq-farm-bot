@@ -1,0 +1,50 @@
+/* Global Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1; /* slate-300 */
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8; /* slate-400 */
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #475569; /* slate-600 */
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #64748b; /* slate-500 */
+}
+
+/* Base styles to reset some defaults if needed, though UnoCSS reset handles most */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* App handles scrolling */
+}
+
+/* NProgress Customization */
+#nprogress .bar {
+  background: #10b981 !important; /* emerald-500 */
+  height: 3px !important;
+}
+
+#nprogress .peg {
+  box-shadow:
+    0 0 10px #10b981,
+    0 0 5px #10b981 !important;
+}

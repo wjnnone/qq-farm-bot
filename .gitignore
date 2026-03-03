@@ -1,3 +1,39 @@
+# Dependencies
 node_modules/
-data/
+**/node_modules/
+.pnpm-store/
+
+# Lockfiles (pnpm workspace keeps pnpm-lock.yaml)
+package-lock.json
+**/package-lock.json
+
+# Build artifacts
 dist/
+**/dist/
+core/dist-*/
+core/dist-nest/
+web/stats.html
+*.tsbuildinfo
+
+# Runtime data
+data/
+core/data/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env & local
+.env
+.env.*
+!.env.example
+*.local
+
+# Editor & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

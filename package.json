@@ -1,37 +1,24 @@
 {
-  "name": "farm",
-  "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
-  "author": "",
-  "type": "commonjs",
-  "main": "client.js",
-  "bin": "client.js",
+  "name": "qq-farm-bot-ui",
+  "packageManager": "pnpm@10.30.2",
   "scripts": {
-    "start": "node client.js",
-    "build:release": "pkg . --no-bytecode --targets node18-win-x64,node18-linux-x64,node18-macos-x64,node18-macos-arm64 --out-path dist",
-    "build:win": "pkg . --no-bytecode --targets node18-win-x64 --out-path dist",
-    "build:linux": "pkg . --no-bytecode --targets node18-linux-x64 --out-path dist",
-    "build:mac": "pkg . --no-bytecode --targets node18-macos-x64,node18-macos-arm64 --out-path dist",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev:core": "pnpm -C core dev",
+    "dev:web": "pnpm -C web dev",
+    "dev": "pnpm build:web && pnpm dev:core",
+    "lint": "pnpm lint:core && pnpm lint:web",
+    "lint:core": "pnpm -C core lint",
+    "lint:web": "pnpm -C web lint",
+    "build:web": "pnpm -C web build",
+    "build": "pnpm build:web",
+    "package:win": "pnpm build:web && pnpm -C core build:win",
+    "package:linux": "pnpm build:web && pnpm -C core build:linux",
+    "package:mac": "pnpm build:web && pnpm -C core build:mac",
+    "package:release": "pnpm build:web && pnpm -C core build:release",
+    "install:all": "pnpm install -r"
   },
-  "dependencies": {
-    "axios": "^1.6.0",
-    "express": "^4.21.0",
-    "long": "^5.3.2",
-    "protobufjs": "^8.0.0",
-    "pushoo": "^0.1.11",
-    "ws": "^8.19.0"
-  },
-  "devDependencies": {
-    "pkg": "^5.8.1"
-  },
-  "pkg": {
-    "assets": [
-      "panel/**/*",
-      "gameConfig/**/*",
-      "proto/**/*",
-      "share.txt"
-    ]
+  "pnpm": {
+    "overrides": {
+      "@babel/traverse": "7.26.10"
+    }
   }
 }

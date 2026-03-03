@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package gamepb.redpacketpb;
+
+import "corepb.proto";
+
+service RedPacketService {
+  rpc GetTodayClaimStatus(GetTodayClaimStatusRequest) returns (GetTodayClaimStatusReply);
+  rpc ClaimRedPacket(ClaimRedPacketRequest) returns (ClaimRedPacketReply);
+}
+
+message GetTodayClaimStatusRequest {}
+
+message RedPacketInfo {
+  int32 id = 1;
+  bool can_claim = 3;
+}
+
+message GetTodayClaimStatusReply {
+  repeated RedPacketInfo infos = 1;
+}
+
+message ClaimRedPacketRequest {
+  int32 id = 1;
+}
+
+message ClaimRedPacketReply {
+  int32 status = 1;
+  corepb.Item item = 2;
+}
